@@ -28,4 +28,4 @@ def evento():
         cluster='us2',
         ssl=True
         )
-        pusher_client.trigger('conexion', 'evento', {"txtTemperatura": 0.6, "txtHumedad": 35, "dpFechaHora": "2024-09-12 20:18"})
+        pusher_client.trigger('conexion', 'evento', {"txtTemperatura": 35, "txtHumedad": 0.6, "dpFechaHora": "2024-09-12 20:13:00"})
