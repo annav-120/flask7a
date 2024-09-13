@@ -19,7 +19,10 @@
     var channel = pusher.subscribe('conexion');
       //Evento:Acción de la aplicación
     channel.bind('evento', function(mensaje) {
-      alert("YA OCURRIÓ EL EVENTO EN LA APLICACIÓN");
+     $("#tbodyLog").append(`<tr>
+    <td>${mensaje["txtTemperatura"]}</td>
+    <td>${mensaje["txtHumedad"]}</td>
+    <td>${mensaje["dpFechaHora"]}</td>
     });
   </script>
     <title>PRUEBA DE TEMPERATURA</title>
