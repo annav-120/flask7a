@@ -28,4 +28,4 @@ def evento():
         cluster='us2',
         ssl=True
         )
-        pusher_client.trigger('my-channel', 'my-event', {'message': 'HOLA MUNDO'})
+        pusher_client.trigger('conexion', 'evento', {'message': 'HOLA MUNDO'})
