@@ -32,9 +32,10 @@
         // Enable pusher logging - don't include this in production
         Pusher.logToConsole = true
         
-var pusher = new Pusher('fe0a6fda0635d4db01ce', {
+    var pusher = new Pusher('fe0a6fda0635d4db01ce', {
       cluster: 'us2'
-});
+    });
+        
         // Canal -> Conexion
         var channel = pusher.subscribe("conexion");
         // Evento: Acción de la aplicación
