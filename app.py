@@ -64,12 +64,12 @@ def evento():
     con.commit()
     con.close()
 
-pusher_client = pusher.Pusher(
+  pusher_client = pusher.Pusher(
     app_id='1864237',
     key='fe0a6fda0635d4db01ce',
     secret='e5c4c8f921f883404989',
     cluster='us2',
     ssl=True
-    )
+  )
 
-    pusher_client.trigger("conexion", "evento", request.args)
+  pusher_client.trigger("conexion", "evento", request.args)
