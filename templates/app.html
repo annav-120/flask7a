@@ -16,9 +16,9 @@
       cluster: 'us2'
     });
   //Canal = Conexión
-    var channel = pusher.subscribe('my-channel');
+    var channel = pusher.subscribe('conexion');
       //Evento:Acción de la aplicación
-    channel.bind('my-event', function(data) {
+    channel.bind('evento', function(mensaje) {
       alert("YA OCURRIÓ EL EVENTO EN LA APLICACIÓN");
     });
   </script>
