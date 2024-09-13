@@ -37,7 +37,16 @@ def alumnosGuardar():
 
 @app.route("/buscar")
 def buscar():
-  return "Hola";
+    if not con.is_connected():
+        con.reconnect()
+
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM sensor_log")
+    con.close()
+    
+    registros = cursor.fetchall()
+
+    return registros
 
 @app.route("/evento", methods=["GET"])
 def evento():
@@ -54,7 +63,7 @@ def evento():
     
     con.commit()
     con.close()
-    
+
 pusher_client = pusher.Pusher(
     app_id='1864237',
     key='fe0a6fda0635d4db01ce',
@@ -62,5 +71,5 @@ pusher_client = pusher.Pusher(
     cluster='us2',
     ssl=True
     )
-    
+
     pusher_client.trigger("conexion", "evento", request.args)
