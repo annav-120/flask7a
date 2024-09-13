@@ -11,17 +11,18 @@
   <script>
 
     Pusher.logToConsole = true;
-
     var pusher = new Pusher('fe0a6fda0635d4db01ce', {
+        
       cluster: 'us2'
     });
-
+  //Canal = Conexión
     var channel = pusher.subscribe('my-channel');
+      //Evento:Acción de la aplicación
     channel.bind('my-event', function(data) {
-      alert(JSON.stringify(data));
+      alert("YA OCURRIÓ EL EVENTO EN LA APLICACIÓN");
     });
   </script>
-    <title>App</title>
+    <title>PRUEBA DE TEMPERATURA</title>
 </head>
 <body>
     <div class="container">
