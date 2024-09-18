@@ -44,10 +44,10 @@ def alumnosGuardar():
 def registrar():
     args = request.args
     pusher_client = pusher.Pusher(
-      app_id="1714541",
-      key="cda1cc599395d699a2af",
-      secret="9e9c00fc36600060d9e2",
-      cluster="us2",
+app_id = "1864237"
+key = "fe0a6fda0635d4db01ce"
+secret = "e5c4c8f921f883404989"
+cluster = "us2"
       ssl=True
     )
 
