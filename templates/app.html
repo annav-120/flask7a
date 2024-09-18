@@ -29,23 +29,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // Enable pusher logging - don't include this in production
-        Pusher.logToConsole = true
-        
-    var pusher = new Pusher('fe0a6fda0635d4db01ce', {
+        function buscar() {
+            $.get("/buscar", function (respuesta) {
+                $("#tbodyLog").html("")
+
+                for (var x in respuesta) {
+                    var registro = respuesta[x]
+
+                    $("#tbodyLog").append(`<tr>
+                        <td>${registro[1]}</td>
+                        <td>${registro[2]}</td>
+                        <td>${registro[3]}</td>
+                    </tr>`)
+                }
+            })
+        }
+
+        buscar()
+ var pusher = new Pusher('fe0a6fda0635d4db01ce', {
       cluster: 'us2'
     });
-        
-        // Canal -> Conexion
-        var channel = pusher.subscribe("conexion");
-        // Evento: Acción de la aplicación
-        channel.bind("evento", function (mensaje) {
-            // alert("Ya ocurrió el evento en la aplicación")
-            $("#tbodyLog").append(`<tr>
-                <td>${mensaje["temperatura"]}</td>
-                <td>${mensaje["humedad"]}</td>
-                <td>${mensaje["fechahora"]}</td>
-            </tr>`)
+
+        var channel = pusher.subscribe("registrosTiempoReal")
+        channel.bind("registroTiempoReal", function (mensaje) {
+            buscar()
         })
     </script>
 </body>
