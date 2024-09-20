@@ -28,13 +28,16 @@
         </table>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Función para cargar los registros de contacto
         function cargarRegistros() {
-            $.get("/buscar", function (respuesta) {
-                $("#tbodyRegistros").html(""); 
+            $.get("/buscar_contactos", function (respuesta) {
+                $("#tbodyRegistros").html("");  // Limpiamos el cuerpo de la tabla
 
+                // Iteramos sobre los registros recibidos y los insertamos en la tabla
                 for (var x in respuesta) {
                     var registro = respuesta[x];
 
@@ -49,13 +52,20 @@
             });
         }
 
+        // Llamamos a la función para cargar los registros al iniciar la página
         cargarRegistros();
 
-         var pusher = new Pusher('fe0a6fda0635d4db01ce', {
+        // Inicializamos Pusher
+        var pusher = new Pusher('fe0a6fda0635d4db01ce', {
             cluster: 'us2'
         });
+
+        // Nos suscribimos al canal 'registrosTiempoReal'
         var channel = pusher.subscribe('registrosTiempoReal');
+
+        // Escuchamos el evento 'nuevoRegistro'
         channel.bind('nuevoRegistro', function(data) {
+            // Cuando se recibe un nuevo registro, lo añadimos a la tabla
             $("#tbodyRegistros").append(`
                 <tr>
                     <td>${data.correo}</td>
