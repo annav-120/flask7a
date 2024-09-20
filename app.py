@@ -84,17 +84,17 @@ def contacto():
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
 
-      if not con.is_connected():
-            con.reconnect()
-      cursor = con.cursor()
-
+        if not con.is_connected():
+              con.reconnect()
+        
+        cursor = con.cursor()
         sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
         val = (correo, nombre, asunto)
         cursor.execute(sql, val)
-
+  
         con.commit()
         cursor.close
-
+  
         return redirect(url_for("exito"))
       
     return render_template("contacto.html")
@@ -102,5 +102,5 @@ def contacto():
 @app.route("/exito")
 def exito():
     return "Gracias por contactarnos. Hemos recibido tu información."
-if __name__ == "__main__"
+if __name__ == "__main__":
   app.run(debug=True)
