@@ -76,3 +76,9 @@ def buscar():
     con.close()
 
     return registros
+
+@app.route("/contacto")
+def contacto():
+    con.close()
+  
+    return render_template("contacto.html")
