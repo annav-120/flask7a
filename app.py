@@ -82,3 +82,25 @@ def contacto():
     con.close()
   
     return render_template("contacto.html")
+
+@app.route("/contacto", methods=["GET", "POST"])
+def contacto():
+    if request.method == "POST":
+        correo = request.form["email"]
+        nombre = request.form["nombre"]
+        asunto = request.form["asunto"]
+        cursos = con.cursor()
+        sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%S, %S, %S)"
+        val = (correo, nombre, asunto)
+        cursor.execute(sql, val)
+        con.commit()
+        cursor.close()
+        return redirect(url_for("exito"))
+      
+    return render_template("contacto.html")
+
+@app.route("/exito")
+def exito():
+    return "Gracias por contactarnos. Hemos recibido tu información."
+if _name_ == "_main_"
+  app.run(debug=True)
