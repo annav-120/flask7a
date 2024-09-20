@@ -93,7 +93,7 @@ def contacto():
         cursor.execute(sql, val)
   
         con.commit()
-        cursor.close
+        cursor.close()
   
         return redirect(url_for("exito"))
       
