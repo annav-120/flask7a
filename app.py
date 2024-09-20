@@ -79,5 +79,6 @@ def buscar():
 
 @app.route("/contacto")
 def contacto():
+  if con.is_connected():
     con.close()
     return render_template("contacto.html")
