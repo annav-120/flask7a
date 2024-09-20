@@ -79,28 +79,34 @@ def buscar():
 
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
+    registros = []
     if request.method == "POST":
         correo = request.form["email"]
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
 
         if not con.is_connected():
-              con.reconnect()
-        
-        cursor = con.cursor()
-        sql = "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
-        val = (correo, nombre, asunto)
-        cursor.execute(sql, val)
-  
-        con.commit()
-        cursor.close()
-  
-        return redirect(url_for("exito"))
-      
-    return render_template("contacto.html")
+            con.reconnect()
 
-@app.route("/exito")
-def exito():
-    return "Gracias por contactarnos. Hemos recibido tu información."
-if __name__ == "__main__":
-  app.run(debug=True)
+        cursor = con.cursor()
+        try:
+            sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
+            val = (correo, nombre, asunto)
+            cursor.execute(sql, val)
+            con.commit()
+            return redirect(url_for("contacto"))
+        except Exception as e:
+            print(f"Error: {e}")
+            return "Ocurrió un error. Inténtalo de nuevo."
+        finally:
+            cursor.close()
+
+    if not con.is_connected():
+        con.reconnect()
+        
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM contactos ORDER BY Id DESC")
+    registros = cursor.fetchall()
+    cursor.close()
+
+    return render_template("contacto.html", registros=registros)
