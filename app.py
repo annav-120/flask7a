@@ -79,6 +79,5 @@ def buscar():
 
 @app.route("/contacto")
 def contacto():
-      con.close()
-  
+    con.close()
     return render_template("contacto.html")
