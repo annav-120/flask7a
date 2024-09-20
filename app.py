@@ -76,7 +76,6 @@ def buscar():
     con.close()
 
     return registros
-
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
     if request.method == "POST":
@@ -93,7 +92,12 @@ def contacto():
         cursor.execute(sql, val)
 
         con.commit()
-        cursor.close()
+
+        pusher_client.trigger("registrosTiempoReal", "nuevoRegistro", {
+            'correo': correo,
+            'nombre': nombre,
+            'asunto': asunto
+        })
 
         return redirect(url_for("exito"))
     
