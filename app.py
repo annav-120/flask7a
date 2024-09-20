@@ -77,24 +77,24 @@ def buscar():
 
     return registros
 
-@app.route("/contacto")
-def contacto():
-    con.close()
-  
-    return render_template("contacto.html")
-
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
     if request.method == "POST":
         correo = request.form["email"]
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
-        cursos = con.cursor()
-        sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%S, %S, %S)"
+
+      if not con.is_connected():
+            con.reconnect()
+      cursor = con.cursor()
+
+        sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
         val = (correo, nombre, asunto)
         cursor.execute(sql, val)
+
         con.commit()
-        cursor.close()
+        cursor.close
+
         return redirect(url_for("exito"))
       
     return render_template("contacto.html")
@@ -102,5 +102,5 @@ def contacto():
 @app.route("/exito")
 def exito():
     return "Gracias por contactarnos. Hemos recibido tu información."
-if _name_ == "_main_"
+if __name__ == "__main__"
   app.run(debug=True)
