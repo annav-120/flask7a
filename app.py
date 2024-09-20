@@ -84,7 +84,6 @@ def contacto():
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
 
-        # Verificamos la conexión antes de ejecutar consultas
         if not con.is_connected():
             con.reconnect()
 
@@ -102,7 +101,7 @@ def contacto():
 
 @app.route("/exito")
 def exito():
-    return "Gracias por contactarnos. Hemos recibido tu información."
+    return "Gracias por contactarnos, en breve lo atenderemos."
 
 if __name__ == "__main__":
     app.run(debug=True)
