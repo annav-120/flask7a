@@ -88,7 +88,7 @@ def contacto():
               con.reconnect()
         
         cursor = con.cursor()
-        sql = "INSERT INTO contactos (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
         val = (correo, nombre, asunto)
         cursor.execute(sql, val)
   
