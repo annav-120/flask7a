@@ -70,7 +70,7 @@ def buscar():
     if not con.is_connected():
         con.reconnect()
     cursor = con.cursor()
-    cursor.execute("SELECT * FROM sensor_log ORDER BY Id_Log DESC")
+    cursor.execute("SELECT * FROM tst0_contacto ORDER BY Id_Contacto DESC")
     registros = cursor.fetchall()
 
     con.close()
