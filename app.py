@@ -71,6 +71,8 @@ def contacto():
         correo = request.form["email"]
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
+        
+        print(f"Correo: {correo}, Nombre: {nombre}, Asunto: {asunto}")
 
         con = get_db_connection()
         cursor = con.cursor()
