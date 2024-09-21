@@ -28,7 +28,18 @@
             <button type="submit" class="btn btn-primary">Contactar</button>
         </form>
     </div>
-
+ <div class="container">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Correo Electronico</th>
+                    <th>Nombre</th>
+                    <th>Asunto</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyLog"></tbody>
+        </table>
+    </div>
     <script>
         $(document).ready(function() {
             
@@ -78,8 +89,26 @@
                 return this.optional(element) || /^[a-zA-Z\s]+$/i.test(value);
             }, "Por favor, introduce solo letras.");
         });
-    </script>
 
+function buscar() {
+            $.get("/buscar", function (respuesta) {
+                $("#tbodyLog").html("")
+
+                for (var x in respuesta) {
+                    var registro = respuesta[x]
+
+                    $("#tbodyLog").append(`<tr>
+                        <td>${registro[1]}</td>
+                        <td>${registro[2]}</td>
+                        <td>${registro[3]}</td>
+                    </tr>`)
+                }
+            })
+        }
+
+        buscar()
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
