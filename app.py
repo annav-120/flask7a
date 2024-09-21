@@ -4,10 +4,8 @@ import mysql.connector
 import datetime
 import pytz
 
-# Inicializa la app Flask
 app = Flask(__name__)
 
-# Pusher client inicializado
 pusher_client = pusher.Pusher(
     app_id='1864237',
     key='fe0a6fda0635d4db01ce',
