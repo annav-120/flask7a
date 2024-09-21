@@ -94,14 +94,5 @@ def contacto():
         con.commit()
       
     pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", correo, nombre, asunto)
-  
-        return redirect(url_for("exito"))
     
     return render_template("contacto.html")
-
-@app.route("/exito")
-def exito():
-    return "Gracias por contactarnos, en breve lo atenderemos."
-
-if __name__ == "__main__":
-    app.run(debug=True)
