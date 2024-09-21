@@ -93,12 +93,6 @@ def contacto():
 
         con.commit()
 
-        pusher_client.trigger("registrosTiempoReal", "nuevoRegistro", {
-            'correo': correo,
-            'nombre': nombre,
-            'asunto': asunto
-        })
-
         return redirect(url_for("exito"))
     
     return render_template("contacto.html")
