@@ -92,7 +92,9 @@ def contacto():
         cursor.execute(sql, val)
 
         con.commit()
-
+      
+    pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", correo, nombre, asunto)
+  
         return redirect(url_for("exito"))
     
     return render_template("contacto.html")
