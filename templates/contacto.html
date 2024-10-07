@@ -42,104 +42,99 @@
         </table>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            // Validación del formulario
-            $("#frmContacto").validate({
-                rules: {
-                    email: {
-                        required: true,
-                        email: true,
-                        minlength: 5,
-                        maxlength: 50
-                    },
-                    nombre: {
-                        required: true,
-                        minlength: 10,
-                        maxlength: 50,
-                        lettersonly: true
-                    },
-                    asunto: {
-                        required: true,
-                        minlength: 10,
-                        maxlength: 50
-                    }
+  <script>
+    $(document).ready(function() {
+        // Validación del formulario
+        $("#frmContacto").validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true,
+                    minlength: 5,
+                    maxlength: 50
                 },
-                messages: {
-                    email: {
-                        required: "Por favor, introduce tu correo electrónico.",
-                        email: "Por favor, introduce una dirección de correo válida.",
-                        minlength: "El correo debe tener al menos 5 caracteres.",
-                        maxlength: "El correo no puede tener más de 50 caracteres."
-                    },
-                    nombre: {
-                        required: "Por favor, introduce tu nombre.",
-                        minlength: "El nombre debe tener al menos 10 caracteres.",
-                        maxlength: "El nombre no puede tener más de 50 caracteres.",
-                        lettersonly: "El nombre solo debe contener letras."
-                    },
-                    asunto: {
-                        required: "Por favor, introduce el asunto.",
-                        minlength: "El asunto debe tener al menos 10 caracteres.",
-                        maxlength: "El asunto no puede tener más de 50 caracteres."
-                    }
+                nombre: {
+                    required: true,
+                    minlength: 10,
+                    maxlength: 50,
+                    lettersonly: true
+                },
+                asunto: {
+                    required: true,
+                    minlength: 10,
+                    maxlength: 50
+                }
+            },
+            messages: {
+                email: {
+                    required: "Por favor, introduce tu correo electrónico.",
+                    email: "Por favor, introduce una dirección de correo válida.",
+                    minlength: "El correo debe tener al menos 5 caracteres.",
+                    maxlength: "El correo no puede tener más de 50 caracteres."
+                },
+                nombre: {
+                    required: "Por favor, introduce tu nombre.",
+                    minlength: "El nombre debe tener al menos 10 caracteres.",
+                    maxlength: "El nombre no puede tener más de 50 caracteres.",
+                    lettersonly: "El nombre solo debe contener letras."
+                },
+                asunto: {
+                    required: "Por favor, introduce el asunto.",
+                    minlength: "El asunto debe tener al menos 10 caracteres.",
+                    maxlength: "El asunto no puede tener más de 50 caracteres."
+                }
+            }
+        });
+
+        $.validator.addMethod("lettersonly", function(value, element) {
+            return this.optional(element) || /^[a-zA-Z\s]+$/.test(value);
+        }, "Por favor, introduce solo letras.");
+
+        // Función para buscar y mostrar los registros
+        function buscar() {
+            $.get("/buscar", function(respuesta) {
+                $("#tbodyLog").html("");
+
+                for (var x in respuesta) {
+                    var registro = respuesta[x];
+                    $("#tbodyLog").append(`<tr>
+                        <td>${registro.Correo_Electronico}</td>
+                        <td>${registro.Nombre}</td>
+                        <td>${registro.Asunto}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="eliminar(${registro.Id_Contacto})">Eliminar</button></td>
+                    </tr>`);
                 }
             });
+        }
 
-            $.validator.addMethod("lettersonly", function(value, element) {
-                return this.optional(element) || /^[a-zA-Z\s]+$/.test(value);
-            }, "Por favor, introduce solo letras.");
+        // Llamada inicial para buscar registros
+        buscar();
 
-            // Función para buscar y mostrar los registros
-            function buscar() {
-                $.get("/buscar", function(respuesta) {
-                    $("#tbodyLog").html("");
-
-                    for (var x in respuesta) {
-                        var registro = respuesta[x];
-                        $("#tbodyLog").append(`<tr>
-                            <td>${registro.Correo_Electronico}</td>
-                            <td>${registro.Nombre}</td>
-                            <td>${registro.Asunto}</td>
-                            <td><button class="btn btn-danger btn-sm" onclick="eliminar('${registro.id}')">Eliminar</button></td>
-                        </tr>`);
-                    }
+        // Función para eliminar un registro
+        window.eliminar = function(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
+                $.post("/eliminar", { id: id }, function(result) {
+                    alert("Registro eliminado correctamente.");
+                    buscar(); // Actualizar la tabla
+                }).fail(function(err) {
+                    alert("Error al eliminar el registro.");
                 });
             }
+        };
 
-            // Llamada inicial para buscar registros
-            buscar();
-
-            // Función para eliminar un registro
-            window.eliminar = function(id) {
-                if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
-                    $.ajax({
-                        url: `/eliminar/${id}`,
-                        type: 'DELETE',
-                        success: function(result) {
-                            alert("Registro eliminado correctamente.");
-                            buscar(); // Actualizar la tabla
-                        },
-                        error: function(err) {
-                            alert("Error al eliminar el registro.");
-                        }
-                    });
-                }
-            };
-
-            // Configuración de Pusher para actualizar en tiempo real
-            Pusher.logToConsole = true;
-            var pusher = new Pusher('fe0a6fda0635d4db01ce', {
-                cluster: 'us2'
-            });
-
-            var channel = pusher.subscribe("registrosTiempoReal");
-            channel.bind("registroTiempoReal", function(mensaje) {
-                console.log("Mensaje recibido:", mensaje);
-                buscar();
-            });
+        // Configuración de Pusher para actualizar en tiempo real
+        Pusher.logToConsole = true;
+        var pusher = new Pusher('fe0a6fda0635d4db01ce', {
+            cluster: 'us2'
         });
-    </script>
+
+        var channel = pusher.subscribe("registrosTiempoReal");
+        channel.bind("registroTiempoReal", function(mensaje) {
+            console.log("Mensaje recibido:", mensaje);
+            buscar();
+        });
+    });
+</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
