@@ -28,20 +28,23 @@
             <button type="submit" class="btn btn-primary">Contactar</button>
         </form>
     </div>
-    <div class="container">
+    <div class="container mt-4">
         <table class="table table-sm">
             <thead>
                 <tr>
                     <th>Correo Electrónico</th>
                     <th>Nombre</th>
                     <th>Asunto</th>
+                    <th>Acciones</th> <!-- Nueva columna para acciones -->
                 </tr>
             </thead>
             <tbody id="tbodyLog"></tbody>
         </table>
     </div>
+
     <script>
         $(document).ready(function() {
+            // Validación del formulario
             $("#frmContacto").validate({
                 rules: {
                     email: {
@@ -87,6 +90,7 @@
                 return this.optional(element) || /^[a-zA-Z\s]+$/.test(value);
             }, "Por favor, introduce solo letras.");
 
+            // Función para buscar y mostrar los registros
             function buscar() {
                 $.get("/buscar", function(respuesta) {
                     $("#tbodyLog").html("");
@@ -97,13 +101,33 @@
                             <td>${registro.Correo_Electronico}</td>
                             <td>${registro.Nombre}</td>
                             <td>${registro.Asunto}</td>
+                            <td><button class="btn btn-danger btn-sm" onclick="eliminar('${registro.id}')">Eliminar</button></td>
                         </tr>`);
                     }
                 });
             }
 
+            // Llamada inicial para buscar registros
             buscar();
 
+            // Función para eliminar un registro
+            window.eliminar = function(id) {
+                if (confirm("¿Estás seguro de que deseas eliminar este registro?")) {
+                    $.ajax({
+                        url: `/eliminar/${id}`,
+                        type: 'DELETE',
+                        success: function(result) {
+                            alert("Registro eliminado correctamente.");
+                            buscar(); // Actualizar la tabla
+                        },
+                        error: function(err) {
+                            alert("Error al eliminar el registro.");
+                        }
+                    });
+                }
+            };
+
+            // Configuración de Pusher para actualizar en tiempo real
             Pusher.logToConsole = true;
             var pusher = new Pusher('fe0a6fda0635d4db01ce', {
                 cluster: 'us2'
