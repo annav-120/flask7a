@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 import pusher
 import mysql.connector
 import datetime
@@ -6,6 +6,7 @@ import pytz
 
 app = Flask(__name__)
 
+# Configuración de Pusher
 pusher_client = pusher.Pusher(
     app_id='1864237',
     key='fe0a6fda0635d4db01ce',
@@ -14,6 +15,7 @@ pusher_client = pusher.Pusher(
     ssl=True
 )
 
+# Función para obtener la conexión con la base de datos
 def get_db_connection():
     con = mysql.connector.connect(
         host="185.232.14.52",
@@ -42,13 +44,15 @@ def registrar():
     args = request.args
     con = get_db_connection()
     cursor = con.cursor()
-    
+
+    # Guardar los datos de temperatura y humedad
     sql = "INSERT INTO sensor_log (Temperatura, Humedad, Fecha_Hora) VALUES (%s, %s, %s)"
     val = (args["temperatura"], args["humedad"], datetime.datetime.now(pytz.timezone("America/Matamoros")))
     cursor.execute(sql, val)
     con.commit()
     con.close()
 
+    # Notificar con Pusher en tiempo real
     pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", args)
     return jsonify(args)
 
@@ -60,6 +64,7 @@ def buscar():
     registros = cursor.fetchall()
     con.close()
 
+    # Crear una lista de diccionarios con los resultados
     registros_list = [{"Id_Contacto": r[0], "Correo_Electronico": r[1], "Nombre": r[2], "Asunto": r[3]} for r in registros]
     return jsonify(registros_list)
 
@@ -69,9 +74,8 @@ def contacto():
         correo = request.form["email"]
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
-        
-        print(f"Correo: {correo}, Nombre: {nombre}, Asunto: {asunto}")
 
+        # Insertar los datos en la base de datos
         con = get_db_connection()
         cursor = con.cursor()
         sql = "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
@@ -80,85 +84,33 @@ def contacto():
         con.commit()
         con.close()
 
+        # Notificar en tiempo real con Pusher
         pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", {"email": correo, "nombre": nombre, "asunto": asunto})
-    
+
     return render_template("contacto.html")
+
+# Ruta para eliminar un registro
+@app.route("/eliminar/<id>", methods=["DELETE"])
+def eliminar(id):
+    con = get_db_connection()
+    
+    # Asegurarte de que la conexión esté activa
+    if not con.is_connected():
+        con.reconnect()
+
+    cursor = con.cursor()
+    
+    # Eliminar el registro con el Id_Contacto proporcionado
+    sql = "DELETE FROM tst0_contacto WHERE Id_Contacto = %s"
+    val = (id,)
+    cursor.execute(sql, val)
+    con.commit()
+    con.close()
+
+    # Notificar a través de Pusher en tiempo real
+    pusher_client.trigger("registrosTiempoReal", "registroEliminado", {"id": id})
+
+    return jsonify({"status": "success", "message": "Registro eliminado correctamente."})
 
 if __name__ == "__main__":
     app.run(debug=True)
-@app.route("/guardar", methods=["POST"])
-def guardar():
-    if not con.is_connected():
-        con.reconnect()
-
-    id          = request.form["id"]
-    temperatura = request.form["temperatura"]
-    humedad     = request.form["humedad"]
-    fechahora   = datetime.datetime.now(pytz.timezone("America/Matamoros"))
-    
-    cursor = con.cursor()
-
-    if id:
-        sql = """
-        UPDATE sensor_log SET
-        Temperatura = %s,
-        Humedad     = %s
-        WHERE Id_Log = %s
-        """
-        val = (temperatura, humedad, id)
-    else:
-        sql = """
-        INSERT INTO sensor_log (Temperatura, Humedad, Fecha_Hora)
-                        VALUES (%s,          %s,      %s)
-        """
-        val =                  (temperatura, humedad, fechahora)
-    
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
-
-    notificarActualizacionTemperaturaHumedad()
-
-    return make_response(jsonify({}))
-
-@app.route("/editar", methods=["GET"])
-def editar():
-    if not con.is_connected():
-        con.reconnect()
-
-    id = request.args["id"]
-
-    cursor = con.cursor(dictionary=True)
-    sql    = """
-    SELECT Id_Log, Temperatura, Humedad FROM sensor_log
-    WHERE Id_Log = %s
-    """
-    val    = (id,)
-
-    cursor.execute(sql, val)
-    registros = cursor.fetchall()
-    con.close()
-
-    return make_response(jsonify(registros))
-
-@app.route("/eliminar", methods=["POST"])
-def eliminar():
-    if not con.is_connected():
-        con.reconnect()
-
-    id = request.form["id"]
-
-    cursor = con.cursor(dictionary=True)
-    sql    = """
-    DELETE FROM sensor_log
-    WHERE Id_Log = %s
-    """
-    val    = (id,)
-
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
-
-    notificarActualizacionTemperaturaHumedad()
-
-    return make_response(jsonify({}))
