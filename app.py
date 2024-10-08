@@ -6,7 +6,6 @@ import pytz
 
 app = Flask(__name__)
 
-# Configuración de Pusher
 pusher_client = pusher.Pusher(
     app_id='1864237',
     key='fe0a6fda0635d4db01ce',
@@ -15,7 +14,6 @@ pusher_client = pusher.Pusher(
     ssl=True
 )
 
-# Conexión a MySQL
 def get_db_connection():
     con = mysql.connector.connect(
         host="185.232.14.52",
@@ -33,14 +31,12 @@ def index():
 def alumnos():
     return render_template("alumnos.html")
 
-# Guardar registro de alumnos
 @app.route("/alumnos/guardar", methods=["POST"])
 def alumnosGuardar():
     matricula = request.form["txtMatriculaFA"]
     nombreapellido = request.form["txtNombreApellidoFA"]
     return f"Matrícula: {matricula} Nombre y Apellido: {nombreapellido}"
 
-# Insertar registro de sensor
 @app.route("/registrar", methods=["GET"])
 def registrar():
     args = request.args
@@ -56,7 +52,6 @@ def registrar():
     pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", args)
     return jsonify(args)
 
-# Buscar registros de contacto
 @app.route("/buscar")
 def buscar():
     con = get_db_connection()
@@ -68,7 +63,6 @@ def buscar():
     registros_list = [{"Id_Contacto": r[0], "Correo_Electronico": r[1], "Nombre": r[2], "Asunto": r[3]} for r in registros]
     return jsonify(registros_list)
 
-# Manejo de contacto (GET/POST)
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
     if request.method == "POST":
@@ -125,7 +119,6 @@ def guardar():
 
     return make_response(jsonify({}))
 
-# Editar sensor log
 @app.route("/editar", methods=["GET"])
 def editar():
     con = get_db_connection()
@@ -144,7 +137,6 @@ def editar():
 
     return make_response(jsonify(registros))
 
-# Eliminar registro de sensor
 @app.route("/eliminar", methods=["POST"])
 def eliminar():
     con = get_db_connection()
@@ -153,7 +145,7 @@ def eliminar():
 
     id = request.form["id"]
 
-    cursor = con.cursor(dictionary=True)
+    cursor = con.cursor()
     sql = "DELETE FROM sensor_log WHERE Id_Log = %s"
     val = (id,)
 
@@ -165,8 +157,27 @@ def eliminar():
 
     return make_response(jsonify({}))
 
+@app.route("/eliminar_contacto", methods=["POST"])
+def eliminar_contacto():
+    con = get_db_connection()
+    if not con.is_connected():
+        con.reconnect()
+
+    id_contacto = request.form["id"]
+
+    cursor = con.cursor()
+    sql = "DELETE FROM tst0_contacto WHERE Id_Contacto = %s"
+    val = (id_contacto,)
+
+    cursor.execute(sql, val)
+    con.commit()
+    con.close()
+
+    pusher_client.trigger("registrosTiempoReal", "registroEliminado", {"id": id_contacto})
+
+    return jsonify({"message": "Contacto eliminado correctamente"})
+
 def notificarActualizacionTemperaturaHumedad():
-    # Notificación de actualización (ejemplo)
     pusher_client.trigger("sensorLogChannel", "sensorLogEvent", {"message": "Actualización de datos"})
 
 if __name__ == "__main__":
