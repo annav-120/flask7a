@@ -52,17 +52,6 @@ def registrar():
     pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", args)
     return jsonify(args)
 
-@app.route("/buscar")
-def buscar():
-    con = get_db_connection()
-    cursor = con.cursor()
-    cursor.execute("SELECT * FROM tst0_contacto ORDER BY Id_Contacto DESC")
-    registros = cursor.fetchall()
-    con.close()
-
-    registros_list = [{"Id_Contacto": r[0], "Correo_Electronico": r[1], "Nombre": r[2], "Asunto": r[3]} for r in registros]
-    return jsonify(registros_list)
-
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
     if request.method == "POST":
