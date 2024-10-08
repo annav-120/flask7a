@@ -28,14 +28,20 @@
             <button type="submit" class="btn btn-primary">Contactar</button>
         </form>
     </div>
+
     <div class="container mt-4">
+        <h2>Búsqueda de Contactos</h2>
+        <div class="mb-3">
+            <input type="text" class="form-control" id="searchInput" placeholder="Buscar por nombre o correo">
+            <button id="searchButton" class="btn btn-info mt-2">Buscar</button>
+        </div>
         <table class="table table-sm">
             <thead>
                 <tr>
                     <th>Correo Electrónico</th>
                     <th>Nombre</th>
                     <th>Asunto</th>
-                    <th>Acciones</th> <!-- Nueva columna para acciones -->
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tbodyLog"></tbody>
@@ -91,8 +97,8 @@
             }, "Por favor, introduce solo letras.");
 
             // Función para buscar y mostrar los registros
-            function buscar() {
-                $.get("/buscar", function(respuesta) {
+            function buscar(term = "") {
+                $.get("/buscar", { q: term }, function(respuesta) {
                     $("#tbodyLog").html("");
 
                     for (var x in respuesta) {
@@ -109,6 +115,12 @@
 
             // Llamada inicial para buscar registros
             buscar();
+
+            // Evento de búsqueda
+            $("#searchButton").click(function() {
+                var searchTerm = $("#searchInput").val().trim();
+                buscar(searchTerm); // Llamar a la función de búsqueda
+            });
 
             // Función para eliminar un registro
             window.eliminar = function(id) {
@@ -131,7 +143,7 @@
             var channel = pusher.subscribe("registrosTiempoReal");
             channel.bind("registroTiempoReal", function(mensaje) {
                 console.log("Mensaje recibido:", mensaje);
-                buscar();
+                buscar(); // Volver a buscar los registros
             });
         });
     </script>
