@@ -27,131 +27,50 @@ def get_db_connection():
 def index():
     return render_template("app.html")
 
-@app.route("/alumnos")
-def alumnos():
-    return render_template("alumnos.html")
-
-@app.route("/alumnos/guardar", methods=["POST"])
-def alumnosGuardar():
-    matricula = request.form["txtMatriculaFA"]
-    nombreapellido = request.form["txtNombreApellidoFA"]
-    return f"Matrícula: {matricula} Nombre y Apellido: {nombreapellido}"
-
-@app.route("/registrar", methods=["GET"])
-def registrar():
-    args = request.args
-    con = get_db_connection()
-    cursor = con.cursor()
-
-    sql = "INSERT INTO sensor_log (Temperatura, Humedad, Fecha_Hora) VALUES (%s, %s, %s)"
-    val = (args["temperatura"], args["humedad"], datetime.datetime.now(pytz.timezone("America/Matamoros")))
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
-
-    pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", args)
-    return jsonify(args)
-
+# Ruta para manejar la creación y edición de contactos
 @app.route("/contacto", methods=["GET", "POST"])
 def contacto():
     if request.method == "POST":
+        id_contacto = request.form.get("id_contacto")  # ID del contacto (si existe)
         correo = request.form["email"]
         nombre = request.form["nombre"]
         asunto = request.form["asunto"]
 
         con = get_db_connection()
         cursor = con.cursor()
-        sql = "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
-        val = (correo, nombre, asunto)
-        cursor.execute(sql, val)
+
+        if id_contacto:  # Si existe id_contacto, es una actualización
+            sql = """
+            UPDATE tst0_contacto
+            SET Correo_Electronico = %s, Nombre = %s, Asunto = %s
+            WHERE Id_Contacto = %s
+            """
+            val = (correo, nombre, asunto, id_contacto)
+            cursor.execute(sql, val)
+        else:  # Si no hay id_contacto, es una inserción
+            sql = "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)"
+            val = (correo, nombre, asunto)
+            cursor.execute(sql, val)
+
         con.commit()
         con.close()
 
-        pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", {"email": correo, "nombre": nombre, "asunto": asunto})
+        # Notificar en tiempo real de la creación o actualización del contacto
+        pusher_client.trigger("registrosTiempoReal", "registroTiempoReal", {
+            "email": correo,
+            "nombre": nombre,
+            "asunto": asunto,
+            "id_contacto": id_contacto if id_contacto else cursor.lastrowid  # Enviar ID actualizado o nuevo
+        })
 
     return render_template("contacto.html")
 
-# Guardar sensor log
-@app.route("/guardar", methods=["POST"])
-def guardar():
-    con = get_db_connection()
-    if not con.is_connected():
-        con.reconnect()
-
-    id = request.form["id"]
-    temperatura = request.form["temperatura"]
-    humedad = request.form["humedad"]
-    fechahora = datetime.datetime.now(pytz.timezone("America/Matamoros"))
-    
-    cursor = con.cursor()
-
-    if id:
-        sql = """
-        UPDATE sensor_log SET
-        Temperatura = %s,
-        Humedad = %s
-        WHERE Id_Log = %s
-        """
-        val = (temperatura, humedad, id)
-    else:
-        sql = """
-        INSERT INTO sensor_log (Temperatura, Humedad, Fecha_Hora)
-                        VALUES (%s, %s, %s)
-        """
-        val = (temperatura, humedad, fechahora)
-    
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
-
-    notificarActualizacionTemperaturaHumedad()
-
-    return make_response(jsonify({}))
-
-@app.route("/editar", methods=["GET"])
-def editar():
-    con = get_db_connection()
-    if not con.is_connected():
-        con.reconnect()
-
-    id = request.args["id"]
-
-    cursor = con.cursor(dictionary=True)
-    sql = "SELECT Id_Log, Temperatura, Humedad FROM sensor_log WHERE Id_Log = %s"
-    val = (id,)
-
-    cursor.execute(sql, val)
-    registros = cursor.fetchall()
-    con.close()
-
-    return make_response(jsonify(registros))
-
-@app.route("/eliminar", methods=["POST"])
-def eliminar():
-    con = get_db_connection()
-    if not con.is_connected():
-        con.reconnect()
-
-    id = request.form["id"]
-
-    cursor = con.cursor()
-    sql = "DELETE FROM sensor_log WHERE Id_Log = %s"
-    val = (id,)
-
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
-
-    notificarActualizacionTemperaturaHumedad()
-
-    return make_response(jsonify({}))
-
-# Buscar registros de contacto
+# Ruta para buscar los contactos, permite filtrar por nombre o correo
 @app.route("/buscar")
 def buscar():
     con = get_db_connection()
     cursor = con.cursor()
-    search_query = request.args.get("q", "")
+    search_query = request.args.get("q", "")  # Parámetro de búsqueda
     if search_query:
         cursor.execute("SELECT * FROM tst0_contacto WHERE Correo_Electronico LIKE %s OR Nombre LIKE %s ORDER BY Id_Contacto DESC", (f"%{search_query}%", f"%{search_query}%"))
     else:
@@ -160,16 +79,18 @@ def buscar():
     registros = cursor.fetchall()
     con.close()
 
+    # Formatear los resultados como una lista de diccionarios
     registros_list = [{"Id_Contacto": r[0], "Correo_Electronico": r[1], "Nombre": r[2], "Asunto": r[3]} for r in registros]
     return jsonify(registros_list)
 
+# Ruta para eliminar un contacto
 @app.route("/eliminar_contacto", methods=["POST"])
 def eliminar_contacto():
     con = get_db_connection()
     if not con.is_connected():
         con.reconnect()
 
-    id_contacto = request.form["id"]
+    id_contacto = request.form["id"]  # ID del contacto a eliminar
 
     cursor = con.cursor()
     sql = "DELETE FROM tst0_contacto WHERE Id_Contacto = %s"
@@ -179,12 +100,25 @@ def eliminar_contacto():
     con.commit()
     con.close()
 
+    # Notificar en tiempo real de la eliminación
     pusher_client.trigger("registrosTiempoReal", "registroEliminado", {"id": id_contacto})
 
     return jsonify({"message": "Contacto eliminado correctamente"})
 
-def notificarActualizacionTemperaturaHumedad():
-    pusher_client.trigger("sensorLogChannel", "sensorLogEvent", {"message": "Actualización de datos"})
+# Ruta para obtener los detalles de un contacto y permitir la edición
+@app.route("/obtener_contacto", methods=["GET"])
+def obtener_contacto():
+    id_contacto = request.args.get("id")  # Obtener ID del contacto de los parámetros de la URL
+    con = get_db_connection()
+    cursor = con.cursor(dictionary=True)
+    
+    sql = "SELECT * FROM tst0_contacto WHERE Id_Contacto = %s"
+    cursor.execute(sql, (id_contacto,))
+    
+    contacto = cursor.fetchone()
+    con.close()
+    
+    return jsonify(contacto)
 
 if __name__ == "__main__":
     app.run(debug=True)
