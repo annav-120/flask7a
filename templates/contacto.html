@@ -13,6 +13,8 @@
     <div class="container mt-5">
         <h1>Formulario de Contacto</h1>
         <form id="frmContacto" action="/contacto" method="POST">
+            <input type="hidden" id="id_contacto" name="id_contacto"> <!-- Campo oculto para el ID del contacto -->
+
             <div class="mb-3">
                 <label for="email" class="form-label">Correo Electrónico</label>
                 <input type="email" class="form-control" id="email" name="email" required minlength="5" maxlength="50">
@@ -25,7 +27,7 @@
                 <label for="asunto" class="form-label">Asunto</label>
                 <input type="text" class="form-control" id="asunto" name="asunto" required minlength="10" maxlength="50">
             </div>
-            <button type="submit" class="btn btn-primary">Contactar</button>
+            <button type="submit" class="btn btn-primary" id="submitButton">Contactar</button>
         </form>
     </div>
 
@@ -107,7 +109,10 @@
                             <td>${registro.Correo_Electronico}</td>
                             <td>${registro.Nombre}</td>
                             <td>${registro.Asunto}</td>
-                            <td><button class="btn btn-danger btn-sm" onclick="eliminar(${registro.Id_Contacto})">Eliminar</button></td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" onclick="editar(${registro.Id_Contacto}, '${registro.Correo_Electronico}', '${registro.Nombre}', '${registro.Asunto}')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminar(${registro.Id_Contacto})">Eliminar</button>
+                            </td>
                         </tr>`);
                     }
                 });
@@ -132,6 +137,18 @@
                         alert("Error al eliminar el registro.");
                     });
                 }
+            };
+
+            // Función para editar un registro
+            window.editar = function(id, correo, nombre, asunto) {
+                // Rellenar el formulario con los datos del contacto seleccionado
+                $("#id_contacto").val(id); // Rellenar el campo oculto con el ID del contacto
+                $("#email").val(correo);
+                $("#nombre").val(nombre);
+                $("#asunto").val(asunto);
+
+                // Cambiar el texto del botón de enviar
+                $("#submitButton").text("Actualizar");
             };
 
             // Configuración de Pusher para actualizar en tiempo real
