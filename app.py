@@ -157,6 +157,23 @@ def eliminar():
 
     return make_response(jsonify({}))
 
+# Buscar registros de contacto
+@app.route("/buscar")
+def buscar():
+    con = get_db_connection()
+    cursor = con.cursor()
+    search_query = request.args.get("q", "")
+    if search_query:
+        cursor.execute("SELECT * FROM tst0_contacto WHERE Correo_Electronico LIKE %s OR Nombre LIKE %s ORDER BY Id_Contacto DESC", (f"%{search_query}%", f"%{search_query}%"))
+    else:
+        cursor.execute("SELECT * FROM tst0_contacto ORDER BY Id_Contacto DESC")
+    
+    registros = cursor.fetchall()
+    con.close()
+
+    registros_list = [{"Id_Contacto": r[0], "Correo_Electronico": r[1], "Nombre": r[2], "Asunto": r[3]} for r in registros]
+    return jsonify(registros_list)
+
 @app.route("/eliminar_contacto", methods=["POST"])
 def eliminar_contacto():
     con = get_db_connection()
