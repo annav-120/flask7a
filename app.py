@@ -4,6 +4,9 @@ import mysql.connector
 import datetime
 import pytz
 
+from flask-cors import CORS, cross_origin
+
+app = Flask(__name__)
 app = Flask(__name__)
 
 pusher_client = pusher.Pusher(
