@@ -3,8 +3,11 @@ import pusher
 import mysql.connector
 import datetime
 import pytz
+from flask_cors import CORS  # Importación de CORS corregida
 
-from flask-cors import CORS, cross_origin
+app = Flask(__name__)
+CORS(app)  # Habilitar CORS en la aplicación Flask
+
 
 app = Flask(__name__)
 app = Flask(__name__)
